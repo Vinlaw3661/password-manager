@@ -7,10 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * @author Vinlaw Mudehwe (vzm@case.edu)
@@ -57,8 +54,8 @@ public class PasswordManager {
     }
 
     // Helper method to load all the passwords in the file
-    public static Map<String, String> loadPasswords(){
-        Map<String, String> passwords = new HashMap<>();
+    public static LinkedHashMap<String, String> loadPasswords(){
+        LinkedHashMap<String, String> passwords = new LinkedHashMap<>();
 
         try(BufferedReader reader = new BufferedReader(new FileReader(filePath))){
             String line;
@@ -87,10 +84,12 @@ public class PasswordManager {
 
     // Helper method to push a new password to the manager
     public static void pushPassword(String label, String value) {
-        Map<String, String> passwords = loadPasswords();
-        passwords.put(label, value);
+        LinkedHashMap<String, String> passwords = loadPasswords(); // Load existing passwords
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+        passwords.put(label, value); // Update or add new password
+
+        // Write everything back to the file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, false))) {
             for (Map.Entry<String, String> entry : passwords.entrySet()) {
                 writer.write(entry.getKey() + ":" + entry.getValue());
                 writer.newLine();
@@ -99,6 +98,7 @@ public class PasswordManager {
             throw new RuntimeException(e);
         }
     }
+
 
     // Helper method to verify entered password to the true one
     public static boolean verifyPassword(String enteredPassword, String storedKey, String salt){
