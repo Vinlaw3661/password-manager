@@ -18,20 +18,18 @@ import java.util.Scanner;
 
 public class PasswordManager {
 
-    // Define fields for constructor
-    private static Cipher cipher;
-    private static Scanner scanner;
-    private static File passwordsFile;
-    private static String filePath;
 
-    // Constructor with cipher used for both encryption and decryption
-    public PasswordManager(){
-        filePath = "passwords.txt";
-        passwordsFile = new File(filePath);
-        scanner = new Scanner(System.in);
-        try{
-            cipher = Cipher.getInstance("AES");
-        }catch(NoSuchAlgorithmException | NoSuchPaddingException e){
+
+    // Static variables for global access
+    private static final Scanner scanner = new Scanner(System.in);
+    private static final String filePath = "passwords.txt";
+    private static final File passwordsFile = new File(filePath);
+    private static final Cipher cipher;
+
+    static {
+        try {
+            cipher = Cipher.getInstance("AES"); // ✅ Initialize Cipher properly
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             throw new RuntimeException(e);
         }
     }
@@ -77,7 +75,7 @@ public class PasswordManager {
     // Helper method to get the salt
     public static String getSalt(String filePath) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            return reader.readLine();
+            return reader.readLine().split(":")[0];
         }
     }
 
@@ -104,6 +102,7 @@ public class PasswordManager {
 
     // Helper method to verify entered password to the true one
     public static boolean verifyPassword(String enteredPassword, String storedKey, String salt){
+        System.out.println(salt);
         byte[] saltBytes = Base64.getDecoder().decode(salt);
         SecretKeySpec derivedKey = generateKey(saltBytes, enteredPassword);
         String derivedKeyString = Base64.getEncoder().encodeToString(derivedKey.getEncoded());
@@ -141,7 +140,7 @@ public class PasswordManager {
     public static void main(String[] args) throws IOException {
 
         System.out.println("Enter the passcode to access your passwords: ");
-        String keyString = scanner.nextLine();
+        String enteredPassword = scanner.nextLine();
 
         if(!passwordsFile.exists()){
             try{
@@ -152,8 +151,8 @@ public class PasswordManager {
                     System.out.println("A new password file has been successfully created.");
 
                     byte [] salt = generateSalt();
-                    SecretKeySpec key = generateKey(salt, keyString);
-                    keyString = Base64.getEncoder().encodeToString(key.getEncoded());
+                    SecretKeySpec key = generateKey(salt, enteredPassword);
+                    String keyString = Base64.getEncoder().encodeToString(key.getEncoded());
                     String saltString = Base64.getEncoder().encodeToString(salt);
                     pushPassword(saltString, keyString);
                 }
@@ -170,7 +169,7 @@ public class PasswordManager {
 
         String salt = getSalt(filePath);
         String managerPassword = getPassword(salt);
-        boolean validPassword = verifyPassword(keyString, managerPassword, salt);
+        boolean validPassword = verifyPassword(enteredPassword, managerPassword, salt);
 
         if(!validPassword){
             System.out.println("Invalid password provided");
