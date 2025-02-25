@@ -102,7 +102,6 @@ public class PasswordManager {
 
     // Helper method to verify entered password to the true one
     public static boolean verifyPassword(String enteredPassword, String storedKey, String salt){
-        System.out.println(salt);
         byte[] saltBytes = Base64.getDecoder().decode(salt);
         SecretKeySpec derivedKey = generateKey(saltBytes, enteredPassword);
         String derivedKeyString = Base64.getEncoder().encodeToString(derivedKey.getEncoded());
