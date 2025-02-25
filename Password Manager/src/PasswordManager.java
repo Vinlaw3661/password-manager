@@ -15,8 +15,6 @@ import java.util.*;
 
 public class PasswordManager {
 
-
-
     // Static variables for global access
     private static final Scanner scanner = new Scanner(System.in);
     private static final String filePath = "passwords.txt";
@@ -25,7 +23,7 @@ public class PasswordManager {
 
     static {
         try {
-            cipher = Cipher.getInstance("AES"); // ✅ Initialize Cipher properly
+            cipher = Cipher.getInstance("AES");
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             throw new RuntimeException(e);
         }
@@ -84,11 +82,9 @@ public class PasswordManager {
 
     // Helper method to push a new password to the manager
     public static void pushPassword(String label, String value) {
-        LinkedHashMap<String, String> passwords = loadPasswords(); // Load existing passwords
+        LinkedHashMap<String, String> passwords = loadPasswords();
+        passwords.put(label, value);
 
-        passwords.put(label, value); // Update or add new password
-
-        // Write everything back to the file
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, false))) {
             for (Map.Entry<String, String> entry : passwords.entrySet()) {
                 writer.write(entry.getKey() + ":" + entry.getValue());
